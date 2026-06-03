@@ -108,7 +108,7 @@ else:
                     st.markdown("<p class='feedback-correct'>⭕ 정답입니다! 완벽히 이해하셨네요.</p>", unsafe_allow_html=True)
                 else:
                     still_wrong.append(index)
-                    st.markdown("<p class='feedback-wrong'>❌ 아직 조금 헷갈리나 봐요. 아래 해설을 참고해 보세요!</p>", unsafe_allow_html=True)
+                    st.markdown("<p class='feedback-wrong'>❌ 아직 조금 헷갈리나 봐요. 해설을 참고해 보세요!</p>", unsafe_allow_html=True)
                 st.write("---")
                 
             if not still_wrong:
@@ -125,7 +125,7 @@ else:
 
     # ==================== [모드 1] 최초 15문항 전체 풀기 모드 ====================
     else:
-        st.write("오늘 읽은 본문 내용을 잘 기억하고 있나요? 문제를 풀고 확인해 보세요!")
+        st.write("오늘 읽은 본문 내용을 잘 기억하고 있나요? 문제를 풀고 확인해 보세요😄!")
         st.write("---")
 
         with st.form("quiz_form"):
