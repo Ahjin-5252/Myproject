@@ -3,7 +3,7 @@
 ### 🏫 Class Information
 * **Target Level:** Middle School 2nd Grade
 * **Period:** 2nd out of 8 periods (2/8 차시)
-* **Total Duration:** 45 Minutes (중학교 시수 적용)
+* **Total Duration:** 45 Minutes
 * **Lesson Topic:** Humpback Whale Observation Journal (Jigsaw Cooperative Reading)
 
 ---
