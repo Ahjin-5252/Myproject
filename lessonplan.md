@@ -10,7 +10,7 @@
 
 ### 🎯 Learning Objectives
 1. Students will be able to scan for specific information from their assigned text segment and complete a research note.
-2. Students can write down information by listening to their gorup members and check if it is correct by reading the text.
+2. Students will be able to write down information by listening to their gorup members and check if it is correct by reading the text.
 3. Students will be able to self-assess their reading comprehension utilizing custom Web Apps.
 
 ---
