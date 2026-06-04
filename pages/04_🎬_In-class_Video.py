@@ -21,5 +21,5 @@ video_html = f"""
 st.markdown(video_html, unsafe_allow_html=True)
 st.write("")
 
-# 학생들이나 교수님이 볼 수 있는 깔끔한 안내 상자
+
 st.info("💡 영상이 재생되지 않거나 권한 요청 메시지가 뜨는 경우, 구글 드라이브 파일의 공유 설정이 '링크가 있는 모든 사용자에게 공개'로 되어 있는지 다시 한번 확인해 주세요.")
