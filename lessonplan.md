@@ -1,4 +1,4 @@
-# 📋 45-Minute Lesson Plan: Jigsaw Reading & EdTech Integration
+# 📋 45-Minute Lesson Plan
 
 ### 🏫 Class Information
 * **Target Level:** Middle School 2nd Grade
