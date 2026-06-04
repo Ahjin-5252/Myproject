@@ -6,8 +6,11 @@ from gtts import gTTS
 import io
 
 # 1. 페이지 설정 및 이미지 느낌의 미니멀 UI/애니메이션 정의
-st.set_page_config(page_title="💓아진T와 함께하는 단어 게임💓", page_icon="🕹️", layout="centered")
-
+st.set_page_config(
+    page_title="00. 🕹️ 단어 게임 앱", #01 ← 여기에 원하시는 넘버링 제목을 적어주세요!
+    page_icon="🕹️",
+    layout="centered"
+    
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
