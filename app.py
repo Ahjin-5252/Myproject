@@ -5,6 +5,11 @@ import time
 from gtts import gTTS
 import io
 
+st.set_page_config(
+    page_title="01 🕹️ 단어 게임 앱",  # 하단 pages 파일들과 통일감을 위해 점(.)을 제외하고 공백으로 연결합니다.
+    page_icon="🕹️",
+    layout="centered"
+)
 # 1. 페이지 설정 및 이미지 느낌의 미니멀 UI/애니메이션 정의
 st.set_page_config(
     page_title="00. 🕹️ 단어 게임 앱", #01 ← 여기에 원하시는 넘버링 제목을 적어주세요!
