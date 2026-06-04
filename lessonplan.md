@@ -40,10 +40,10 @@
 * **Pre-Reading & Inference (5 min.):**
   * **Activity:** Students watch a short introductory video clip about humpback whales and predict the main theme and context of today's reading text.
 * **Jigsaw Activity Phase 1: Expert Groups (12 min.):**
-  * **Setup:** The reading text is divided into 4 distinct parts (A, B, C, D). Students are assigned to a specific part, forming "expert groups."
+  * **Setup:** The reading text is divided into 4 distinct parts (A, B, C, and D). Students are assigned to a specific part, forming "expert groups."
   * **Activity:** Students independently read their assigned text and fill out their section of the "Research Note" on the printed worksheet.
 * **Jigsaw Activity Phase 2: Home Groups (10 min.):**
-  * **Setup:** Students form their "home groups" consisting of one expert from each segment (A, B, C, and D).
+  * **Setup:** Students form their "home groups" consisting of one expert from each part (A, B, C, and D).
   * **Activity:** Taking turns in chronological order, each student explains their part to the group. The remaining group members listen actively **without looking at the text** and complete their Research Notes based solely on the oral information received.
 * **Post-Reading Verification & Differentiated Task (8 min.):**
   * **Activity 1:** All students re-read the entire text to verify whether the information they wrote down from their peers is accurate.
