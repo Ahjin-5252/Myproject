@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit st
 import pandas as pd
 import random
 import time
@@ -315,15 +315,15 @@ def run_word_game():
             time.sleep(0.4)
             st.rerun()
 
-# 3. 🛠️ 완벽한 네비게이션 매핑 시스템 (사이드바 순서 및 이름 100% 통제)
-# st.Page를 사용하여 각 페이지의 제목과 아이콘을 이 코드 내부에서 직접 지명합니다.
+# 3. 🛠️ 완벽한 네비게이션 매핑 시스템 (영문 경로로 완전히 에러 차단)
+# 실제 GitHub 파일명(영어)과 사이드바에 출력될 제목(한글+이모지)을 1:1로 매핑합니다.
 page_01 = st.Page(run_word_game, title="01 🕹️ 단어 게임 앱", icon="🕹️", default=True)
-page_02 = st.Page("pages/02_📖_본문_확인_퀴즈.py", title="02 📖 본문 확인 퀴즈", icon="📖")
-page_03 = st.Page("pages/03_📘_Textbook.py", title="03 📘 Textbook", icon="📘")
-page_04 = st.Page("pages/04_📝_Worksheet.py", title="04 📝 Worksheet", icon="📝")
-page_05 = st.Page("pages/05_🎬_In-class_Video.py", title="05 🎬 In-class Video", icon="🎬")
-page_06 = st.Page("pages/06_⏳_Class_Timer.py", title="06 ⏳ Class Timer", icon="⏳")
-page_07 = st.Page("pages/07_📽️_Video_Guide_for_Apps.py", title="07 📽️ Video Guide for Apps", icon="📽️")
+page_02 = st.Page("pages/02_quiz.py", title="02 📖 본문 확인 퀴즈", icon="📖")
+page_03 = st.Page("pages/03_textbook.py", title="03 📘 Textbook", icon="📘")
+page_04 = st.Page("pages/04_worksheet.py", title="04 📝 Worksheet", icon="📝")
+page_05 = st.Page("pages/05_video.py", title="05 🎬 In-class Video", icon="🎬")
+page_06 = st.Page("pages/06_timer.py", title="06 ⏳ Class Timer", icon="⏳")
+page_07 = st.Page("pages/07_guide.py", title="07 📽️ Video Guide for Apps", icon="📽️")
 
 # 정의된 페이지 목록을 사이드바 빌더에 주입하여 실행합니다.
 pg = st.navigation([page_01, page_02, page_03, page_04, page_05, page_06, page_07])
