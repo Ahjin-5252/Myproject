@@ -5,15 +5,16 @@ import time
 from gtts import gTTS
 import io
 
-# 1. 페이지 기본 설정 (브라우저 탭 이름)
+# 1. 페이지 기본 설정 (브라우저 상단 탭 명칭 고정)
 st.set_page_config(
     page_title="01 🕹️ 단어 게임 앱", 
     page_icon="🕹️",
     layout="centered"
 )
 
-# 🌟 [오류 해결 핵심] 사이드바 맨 위에 "01 🕹️ 단어 게임 앱"이라는 텍스트를 강제로 박아 넣는 컴포넌트입니다.
-st.logo("", icon_image=None, title="01 🕹️ 단어 게임 앱")
+
+st.sidebar.markdown("# 01 🕹️ 단어 게임 앱")
+st.sidebar.write("---") 
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
