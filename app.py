@@ -5,14 +5,15 @@ import time
 from gtts import gTTS
 import io
 
-# 1. 페이지 설정 및 이미지 느낌의 미니멀 UI/애니메이션 정의
-# 하단 pages 파일들(01_📖_..., 02_📘_...)과 통일감을 위해 점(.)을 제외하고 '00' 공백으로 연결합니다.
+# 1. 페이지 기본 설정 (브라우저 탭 이름)
 st.set_page_config(
     page_title="01 🕹️ 단어 게임 앱", 
     page_icon="🕹️",
     layout="centered"
 )
 
+# 🌟 [오류 해결 핵심] 사이드바 맨 위에 "01 🕹️ 단어 게임 앱"이라는 텍스트를 강제로 박아 넣는 컴포넌트입니다.
+st.logo("", icon_image=None, title="01 🕹️ 단어 게임 앱")
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
