@@ -2,7 +2,7 @@ import streamlit as st
 
 # 페이지 대문 제목 설정
 st.title("🎬 In-class Video")
-st.write("오늘 수업 시간에 함께 시청할 멀티미디어 영상 자료입니다.")
+st.write("오늘 수업 시간에 함께 볼 영상 자료입니다.")
 st.write("---")
 
 # 🔗 제공해주신 유튜브 '일부 공개' 주소를 안전하게 바인딩합니다.
