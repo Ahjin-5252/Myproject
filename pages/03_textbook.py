@@ -1,32 +1,45 @@
 import streamlit as st
-import base64
 import os
 
+# 페이지 대문 제목 설정
 st.title("📘 Textbook Material")
-st.write("오늘 함께 읽을 교과서 본문 내용입니다. 마우스로 스크롤하며 읽어보세요.")
+st.write("오늘 수업에 필요한 교과서 본문 자료입니다. 아래 버튼을 눌러 확인하세요.")
 st.write("---")
 
-# 🛠️ 현재 실행 파일의 위치를 기준으로 교과서 PDF 경로를 안전하게 절대 경로로 추적합니다.
+# 🛠️ 파일 경로 추적 엔진
 current_dir = os.path.dirname(os.path.abspath(__file__))
 pdf_path = os.path.join(current_dir, "textbook.pdf")
 
-# 만약 최상위 루트 경로에 올리셨을 경우를 대비한 보조 경로 설정
+# 만약 최상위 경로에 파일이 있을 경우를 위한 백업 경로
 if not os.path.exists(pdf_path):
     pdf_path = os.path.join(os.path.dirname(current_dir), "textbook.pdf")
 
-# 🔍 PDF 파일 존재 여부 검사 및 화면 렌더링
+# 🔍 PDF 파일 존재 확인 후 다운로드 컴포넌트 생성
 if os.path.exists(pdf_path):
     with open(pdf_path, "rb") as f:
-        base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+        pdf_bytes = f.read()
     
-    # 웹 화면에 PDF를 내장하는 HTML 프레임 규격
-    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf" style="border:1px solid #ccc; border-radius:8px;"></iframe>'
-    st.markdown(pdf_display, unsafe_allow_html=True)
-else:
-    # 🚨 파일이 없을 때 선생님이 직관적으로 아실 수 있도록 경고창을 명확히 띄웁니다.
-    st.error("🚨 'textbook.pdf' 파일을 찾을 수 없습니다.")
-    st.info("""
-    **💡 조치 방법 안내:**
-    1. 컴퓨터에 있는 교과서 PDF 파일 이름을 영어 소문자로 **`textbook.pdf`** 라고 변경합니다.
-    2. GitHub 저장소의 **`pages` 폴더 안**에 해당 파일을 다시 업로드해 주세요!
+    # 시각적 안내를 주는 대형 가이드 박스
+    st.info("💡 아래의 다운로드 버튼을 클릭하면 교과서 본문 PDF 파일을 내 컴퓨터나 스마트폰에 바로 저장하여 편리하게 읽을 수 있습니다.")
+    st.write("")
+    
+    # 📥 Streamlit 공식 표준 다운로드 버튼 컴포넌트 (use_container_width로 가로폭 꽉 차게 디자인)
+    st.download_button(
+        label="📥 교과서 본문 PDF 다운로드 받기",
+        data=pdf_bytes,
+        file_name="textbook_material.pdf",
+        mime="application/pdf",
+        use_container_width=True
+    )
+    
+    # 추가적인 학습 안내 메시지 배치 공간
+    st.write("")
+    st.markdown("""
+    ### 📝 학습 안내
+    1. 다운로드한 교과서 본문을 읽고 오늘의 학습 과제를 풀어봅시다.
+    2. 본문 내용 파악이 끝나면 사이드바의 **02 📖 본문 확인 퀴즈**로 이동하여 문제를 풀어봅니다.
     """)
+
+else:
+    # 만약의 사태를 대비한 안전망 경고창
+    st.error("🚨 'textbook.pdf' 자원을 서버에서 로드하지 못했습니다. 파일 위치를 다시 확인해 주세요.")
