@@ -28,38 +28,38 @@ This repository contains the source code for an **EdTech-Integrated Jigsaw Coope
 
 | Phase | Time | Learning Activities & Tasks | ✨ EdTech & Material Integration |
 | :--- | :--- | :--- | :--- |
-| **Introduction** | 5 min. | Attendance check & Vocabulary review game | **01 🕹️ Word Game App** (Main Home) |
-| **Development 1** | 5 min. | Pre-reading: Video-based prompt & Topic inference | **05 🎬 In-class Video** (YouTube Stream) |
-| **Development 2** | 12 min. | Jigsaw Phase 1: Individual segment scanning | **03 📘 Textbook** & **04 📝 Worksheet** Repositories |
+| **Introduction** | 5 min. | Attendance check & Vocabulary review game | **01 🕹️ Word Game App** |
+| **Development 1** | 5 min. | Pre-reading: Video-based prompt & Topic inference | **05 🎬 In-class Video** |
+| **Development 2** | 12 min. | Jigsaw Phase 1: Individual segment scanning | **03 📘 Textbook** & **04 📝 Worksheet** |
 | **Development 3** | 10 min. | Jigsaw Phase 2: Peer sharing & Oral synthesis | Offline peer tutoring (**06 ⏳ Class Timer** for pacing) |
-| **Development 4** | 8 min. | Text validation & Differentiated assessment | **02 📖 Quiz App** (Differentiated for fast-finishers) |
+| **Development 4** | 8 min. | Text validation & Differentiated assessment | **02 📖 Quiz App** |
 | **Conclusion** | 5 min. | Wrap-up, qualitative feedback, & Next-class preview | Physical Board & Teacher-led feedback |
 
 ---
 
 ## 🕹️ 4. Core Features & User Manual
 
-### [01] 🕹️ Word Game App (`app.py` / Main Home)
+### [01] 🕹️ Word Game App 
 * **Classroom Implementation**: Introduction Phase (4 min.)
 * **How to Use**:
   1. Students log in by entering their names and clicking the `Start` button.
   2. English words drop from the top of the canvas. Students must type the correct Korean meaning before the words hit the bottom to score points.
   3. Upon Game Over, clicking the `📚 단어학습하기` (Word Study) button unlocks a **Digital Self-Diagnostic Worksheet** where students can practice spelling and listen to standard American accents powered by the gTTS engine.
 
-### [02] 📖 Quiz App (`pages/02_quiz.py`)
+### [02] 📖 Quiz App 
 * **Classroom Implementation**: Development Phase 4 (8 min.) - Designed for Fast-Finishers.
 * **How to Use**:
   1. Students who complete the reading verification early access this page via QR code or the sidebar menu.
   2. They solve 15 text-based reading comprehension questions.
   3. The real-time scoring engine provides immediate feedback, allowing students to access a specialized review mode with detailed linguistic and contextual explanations.
 
-### [03] 📘 Textbook & [04] 📝 Worksheet Repository
+### [03] 📘 Textbook & [04] 📝 Worksheet 
 * **How to Use**: To bypass rigid browser-side CORS policies, these pages offer large, touch-friendly, high-speed download triggers. Students can securely download `textbook.pdf` and `worksheet.pdf (Research Note)` straight onto their tablets or smartphones with a single tap.
 
-### [05] 🎬 In-class Video (`pages/05_video.py`)
+### [05] 🎬 In-class Video 
 * **How to Use**: Implements a lightweight YouTube unlisted video streaming architecture. It ensures zero-buffering, high-definition playback of the humpback whale introductory clip, even when multiple student devices hit the server simultaneously.
 
-### [06] ⏳ Class Timer (`pages/06_timer.py`)
+### [06] ⏳ Class Timer 
 * **How to Use**: A teacher-facing utility projected onto the main classroom screen. It synchronizes with Korea Standard Time (KST) and utilizes JavaScript canvas modules to display a dynamic, circular countdown ring for Jigsaw phases (12 min. / 10 min.), triggering an audio alarm once time expires.
 
 ---
