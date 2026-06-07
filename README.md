@@ -63,4 +63,4 @@ This repository contains the source code for an **EdTech-Integrated Jigsaw Coope
 * **How to Use**: A teacher-facing utility projected onto the main classroom screen. It synchronizes with Korea Standard Time (KST) and utilizes JavaScript canvas modules to display a dynamic, circular countdown ring for Jigsaw phases (12 min. / 10 min.), triggering an audio alarm once time expires.
 
 ---
-*Developed by Ajin T (Namyang Middle School)*
+*Developed by Ahjin T (Namyang Middle School)*
