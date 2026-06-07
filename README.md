@@ -1,4 +1,4 @@
-# 🐧 Ajin T's AI English Class Portfolio with Edutech
+# 🐧 Ahjin T's AI English Class Portfolio with Edutech
 
 This repository contains the source code for an **EdTech-Integrated Jigsaw Cooperative Reading Web Application** tailored for Middle School 2nd-grade English classes. Built on the Streamlit framework, this application integrates vocabulary gamification, comprehension quizzes, a classroom timer, and a multimedia resource repository into a single unified web interface.
 
