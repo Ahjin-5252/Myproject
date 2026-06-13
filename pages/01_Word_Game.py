@@ -53,18 +53,16 @@ def load_game_data():
 
 df_game = load_game_data()
 
-# 3. [완벽 교정] 캐싱 장벽을 허물고 실시간으로 가장 안전하게 오디오를 전달하는 표준 오디오 플레이어 함수
+# 3. 안전한 gTTS 음원 플레이어 함수
 def play_word_audio(text, key_idx):
     clean_text = str(text).strip("* ")
     if clean_text and clean_text.lower() != "nan":
         try:
-            # 실시간으로 순수 바이너리 스트림을 열어 구글 gTTS 서버와 다이렉트 통신
             tts = gTTS(text=clean_text, lang='en', tld='com', slow=False)
             fp = io.BytesIO()
             tts.write_to_fp(fp)
             fp.seek(0)
-            # 깨진 캐시 데이터를 거치지 않고 스트림릿 내장 플레이어에 순수 바이트 그대로 주입
-            st.audio(fp.read(), format="audio/mp3", key=f"realtime_audio_{key_idx}")
+            st.audio(fp.read(), format="audio/mp3", key=f"realltime_audio_{key_idx}")
         except:
             st.caption("🔊 연결 지연")
     else:
@@ -91,6 +89,8 @@ if "last_refresh_time" not in st.session_state:
     st.session_state.last_refresh_time = None
 if "study_states" not in st.session_state:
     st.session_state.study_states = {}
+if "show_study_section" not in st.session_state: # 단어학습 영역 토글 변수 추가
+    st.session_state.show_study_section = False
 
 COLORS = ["#2AM2FF", "#FF3B6F", "#2BD9A5", "#FFAA00", "#9B5DE5"]
 
@@ -138,15 +138,13 @@ def check_answer_callback():
                 break
     st.session_state.game_input_box = ""
 
-# 5. 📚 단어 자가 진단 다이얼로그 팝업 창 함수
-@st.dialog("📖 Word List")
-def show_study_records():
-    st.write("지우기 버튼을 누르면 단어나 뜻이 빈칸으로 변합니다. 정답은 파란색, 정답이 아니면 빨간색으로 표시돼요. 스스로 공부해봐요😄")
+# 5. 📚 [구조 전면 대개혁] 화면 이탈 없는 평면형 단어 학습 렌더러 함수
+def render_flat_study_records():
+    st.markdown("### 📖 스스로 단어 학습하기")
+    st.write("지우기 버튼을 누르면 단어나 뜻이 빈칸으로 변합니다. 정답은 파란색, 오답은 빨간색으로 표시돼요. 스스로 공부해봐요😄")
     st.write("---")
     
-    current_df = load_game_data()
-    
-    for index, row in current_df.iterrows():
+    for index, row in df_game.iterrows():
         clean_word = str(row['word']).strip("* ")
         clean_meaning = str(row['meaning']).strip()
         
@@ -160,7 +158,7 @@ def show_study_records():
             
         col_word_area, col_meaning_area, col_audio_area = st.columns([3, 3, 2])
         
-        # 🅰️ 영어 단어 지우기/확인 제어 구역
+        # 영어 단어 제어 구역
         with col_word_area:
             state = st.session_state.study_states[w_key]
             if state["mode"] == "show":
@@ -171,27 +169,27 @@ def show_study_records():
                     else:
                         st.write(clean_word)
                 with inner_c2:
-                    if st.button("지우기", key=f"dialog_del_w_{index}", use_container_width=True):
+                    if st.button("지우기", key=f"flat_del_w_{index}", use_container_width=True):
                         st.session_state.study_states[w_key] = {"mode": "edit", "status": "none"}
                         st.rerun()
             else:
-                in_val = st.text_input("단어 입력", key=f"dlg_ans_w_{index}", placeholder="Type...", label_visibility="collapsed")
+                in_val = st.text_input("단어 입력", key=f"flat_ans_w_{index}", placeholder="Type...", label_visibility="collapsed")
                 c_btn, c_cancel = st.columns(2)
                 with c_btn:
-                    if st.button("확인", key=f"dlg_chk_w_{index}", use_container_width=True):
+                    if st.button("확인", key=f"flat_chk_w_{index}", use_container_width=True):
                         if in_val.strip().lower() == clean_word.lower():
                             st.session_state.study_states[w_key] = {"mode": "show", "status": "correct"}
                         else:
                             st.session_state.study_states[w_key]["status"] = "wrong"
                         st.rerun()
                 with c_cancel:
-                    if st.button("취소", key=f"dlg_cnl_w_{index}", use_container_width=True):
+                    if st.button("취소", key=f"flat_cnl_w_{index}", use_container_width=True):
                         st.session_state.study_states[w_key] = {"mode": "show", "status": "none"}
                         st.rerun()
                 if state["status"] == "wrong":
-                    st.markdown("<span class='txt-wrong'>❌ 다시 입력해보세요!</span>", unsafe_allow_html=True)
+                    st.markdown("<span class='txt-wrong'>❌ 다시 도전!</span>", unsafe_allow_html=True)
 
-        # 🅱️ 한국어 뜻 지우기/확인 제어 구역
+        # 한국어 뜻 제어 구역
         with col_meaning_area:
             state_m = st.session_state.study_states[m_key]
             if state_m["mode"] == "show":
@@ -202,14 +200,14 @@ def show_study_records():
                     else:
                         st.write(clean_meaning)
                 with inner_m2:
-                    if st.button("지우기", key=f"dialog_del_m_{index}", use_container_width=True):
+                    if st.button("지우기", key=f"flat_del_m_{index}", use_container_width=True):
                         st.session_state.study_states[m_key] = {"mode": "edit", "status": "none"}
                         st.rerun()
             else:
-                in_val_m = st.text_input("뜻 입력", key=f"dlg_ans_m_{index}", placeholder="Type...", label_visibility="collapsed")
+                in_val_m = st.text_input("뜻 입력", key=f"flat_ans_m_{index}", placeholder="Type...", label_visibility="collapsed")
                 cm_btn, cm_cancel = st.columns(2)
                 with cm_btn:
-                    if st.button("확인", key=f"dlg_chk_m_{index}", use_container_width=True):
+                    if st.button("확인", key=f"flat_chk_m_{index}", use_container_width=True):
                         valid_meanings = [m.strip() for m in clean_meaning.split(",")]
                         if in_val_m.strip() in valid_meanings:
                             st.session_state.study_states[m_key] = {"mode": "show", "status": "correct"}
@@ -217,13 +215,13 @@ def show_study_records():
                             st.session_state.study_states[m_key]["status"] = "wrong"
                         st.rerun()
                 with cm_cancel:
-                    if st.button("취소", key=f"dlg_cnl_m_{index}", use_container_width=True):
+                    if st.button("취소", key=f"flat_cnl_m_{index}", use_container_width=True):
                         st.session_state.study_states[m_key] = {"mode": "show", "status": "none"}
                         st.rerun()
                 if state_m["status"] == "wrong":
-                    st.markdown("<span class='txt-wrong'>❌ 다시 입력해보세요!</span>", unsafe_allow_html=True)
+                    st.markdown("<span class='txt-wrong'>❌ 다시 도전!</span>", unsafe_allow_html=True)
                     
-        # 🔊 실시간 다이렉트 통신 연결 (오류 원천 차단)
+        # 오디오 구역
         with col_audio_area:
             play_word_audio(clean_word, index)
                 
@@ -232,7 +230,6 @@ def show_study_records():
 # 6. 🎮 단어 게임 메인 프레그먼트 구역
 @st.fragment
 def word_game_frame():
-    # 최초 로딩 메시지 제거 후 깔끔한 타이틀 유지
     st.write("위에서 내려오는 영단어의 뜻을 시간 내에 맞춰보세요!")
     
     if not st.session_state.game_started:
@@ -249,6 +246,7 @@ def word_game_frame():
                 st.session_state.just_popped_word = None
                 st.session_state.popped_index = None
                 st.session_state.study_states = {}
+                st.session_state.show_study_section = False
                 init_game_words()
                 st.rerun()
 
@@ -270,12 +268,19 @@ def word_game_frame():
                 st.session_state.popped_index = None
                 st.session_state.last_refresh_time = None
                 st.session_state.study_states = {}
+                st.session_state.show_study_section = False
                 st.rerun()
                 
             st.write("---")
             
-            if st.button("📚 단어학습하기", use_container_width=True):
-                show_study_records()
+            # [구조 교정] 닫히는 토글 버튼으로 구조 변경
+            if st.button("📚 단어 학습판 열기 / 닫기", use_container_width=True):
+                st.session_state.show_study_section = not st.session_state.show_study_section
+                st.rerun()
+                
+            # 토글 상태가 True일 때 화면 하단에 안전하게 학습지 정렬
+            if st.session_state.show_study_section:
+                render_flat_study_records()
 
         else:
             if time.time() - st.session_state.last_refresh_time > 12.0:
