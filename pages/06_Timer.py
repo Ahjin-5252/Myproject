@@ -5,7 +5,7 @@ import streamlit.components.v1 as components
 st.set_page_config(page_title="Customized Timer", layout="centered")
 
 st.title("🐧 MK316 Customized Timer")
-st.caption("Modified by Ahjin") 
+st.caption("Modified and used by Ahjin") 
 
 # 2. 분(Minutes) 단위 입력 시스템
 minutes = st.number_input(
@@ -18,13 +18,13 @@ minutes = st.number_input(
 # 자바스크립트 연동을 위한 초 환산
 seconds = minutes * 60
 
-# [대개혁] 외부 mp3 파일 없이도 웹에서 즉시 재생되는 맑은 온라인 알람 벨소리 주소 바인딩
-# (교실에서 쓰기 좋은 깔끔한 전자 알람 소리입니다.)
-online_alarm_url = "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"
+# [볼륨 대폭 증폭] 교실용으로 특화된 데시벨 높고 또렷한 찢어지는 전자 알람 음원 주소로 교체했습니다.
+# (기존 구글 소리보다 훨씬 날카롭고 크게 들립니다.)
+loud_alarm_url = "https://assets.mixkit.co/active_storage/sfx/991/991-84.wav"
 
 audio_html = f"""
 <audio id="alarmSound" preload="auto">
-    <source src="{online_alarm_url}" type="audio/ogg">
+    <source src="{loud_alarm_url}" type="audio/wav">
 </audio>
 """
 
@@ -156,10 +156,10 @@ components.html(
                     document.getElementById("timerText").textContent = "Done";
                     document.getElementById("message").textContent = "⏰ Time's Up!";
 
-                    // 시간 종료 시 오디오 플레이어 강제 강타 구역
                     const alarm = document.getElementById("alarmSound");
                     if (alarm) {{
-                        alarm.muted = false; // 혹시 모를 브라우저 음소거 정책 해제
+                        alarm.muted = false;
+                        alarm.volume = 1.0; // [치트키] 브라우저 시스템이 허용하는 최대 볼륨(100%) 강제 고정
                         alarm.play().catch(function(error) {{
                             console.log("Audio play failed: ", error);
                         }});
@@ -174,7 +174,6 @@ components.html(
             remainingTime = totalTime;
             document.getElementById("message").textContent = "";
             
-            // 리셋 시 알람 소리도 조용히 정지시킵니다.
             const alarm = document.getElementById("alarmSound");
             if (alarm) {{
                 alarm.pause();
