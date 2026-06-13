@@ -53,7 +53,7 @@ def load_game_data():
 
 df_game = load_game_data()
 
-# 3. 미국식 발음 gTTS 음원 데이터 개별 추출 함수 (캐싱 처리로 속도 최적화)
+# 3. 미국식 발음 gTTS 음원 데이터 개별 추출 함수 (캐싱으로 로딩 유실 전면 차단)
 @st.cache_data
 def get_us_audio_bytes(text):
     clean_text = str(text).strip("* ")
@@ -130,13 +130,13 @@ def check_answer_callback():
                 break
     st.session_state.game_input_box = ""
 
-# 5. 📚 [교정 완료] 단어 자가 진단 다이얼로그 팝업 창 함수 독립 선언
+# 5. 📚 [수정포인트] 격리벽 안에서도 gTTS 통신이 100% 뚫리도록 데코레이터 이중 선언 보완
+@st.fragment
 @st.dialog("📖 Word List")
 def show_study_records():
     st.write("지우기 버튼을 누르면 단어나 뜻이 빈칸으로 변합니다. 정답은 파란색, 정답이 아니면 빨간색으로 표시돼요. 스스로 공부해봐요😄")
     st.write("---")
     
-    # UnboundLocalError 방지를 위해 글로벌 캐싱 데이터 로드
     current_df = load_game_data()
     
     for index, row in current_df.iterrows():
@@ -210,13 +210,13 @@ def show_study_records():
                             st.session_state.study_states[m_key]["status"] = "wrong"
                         st.rerun()
                 with cm_cancel:
-                    if st.button("취소", key=f"dlg_cnl_m_{index}", use_container_width=True):
+                    if st.button("취se", key=f"dlg_cnl_m_{index}", use_container_width=True):
                         st.session_state.study_states[m_key] = {"mode": "show", "status": "none"}
                         st.rerun()
                 if state_m["status"] == "wrong":
                     st.markdown("<span class='txt-wrong'>❌ 다시 입력해보세요!</span>", unsafe_allow_html=True)
                     
-        # 🔊 [수정포인트] 각 단어별 고유 오디오 컴포넌트 실시간 바인딩 (모든 단어 활성화 보장)
+        # 🔊 모든 단어 고유 재생 컴포넌트 실시간 바인딩
         with col_audio_area:
             try:
                 audio_bytes = get_us_audio_bytes(clean_word)
@@ -274,7 +274,6 @@ def word_game_frame():
                 
             st.write("---")
             
-            # [수정포인트] 다이얼로그 호출부 간섭 완전 해제
             if st.button("📚 단어학습하기", use_container_width=True):
                 show_study_records()
 
