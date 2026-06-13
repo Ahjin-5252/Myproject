@@ -42,7 +42,7 @@ def run_home_dashboard():
     * **5️⃣ Video:** 본문을 읽기 전 이 영상을 먼저 봐주세요.
     * **6️⃣ Timer:** 타이머입니다.
     * **7️⃣ Guide:** 플랫폼 이용이 낯선 분들을 위한 사용 설명서입니다.
-    * **8️⃣ 결과물 공유 플랫폼: https://quizn.show/pbd/info/board/1041909
+    * **8️⃣ 결과물 공유 플랫폼:** https://quizn.show/pbd/info/board/1041909
     """)
     st.caption("© 2026 Ahjin T. All rights reserved. Powered by Streamlit & Canva AI.")
 
