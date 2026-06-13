@@ -45,7 +45,7 @@ def run_home_dashboard():
     * **6️⃣ Timer:** 타이머 창입니다.
     * **7️⃣ Guide:** 플랫폼 이용이 낯선 분들을 위한 사용 설명서입니다.
     """)
-    st.caption("© 2026 Ajin T. All rights reserved. Powered by Streamlit & Canva AI.")
+    st.caption("© 2026 Ahjin T. All rights reserved. Powered by Streamlit & Canva AI.")
 
 # 3. 🛠️ 완벽한 네비게이션 매핑 시스템 (가장 바깥 app.py에서 딱 한 번만 통합 제어!)
 page_00 = st.Page(run_home_dashboard, title="🐋 HOME", icon="🐋", default=True)
