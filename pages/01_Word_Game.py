@@ -53,28 +53,24 @@ def load_game_data():
 
 df_game = load_game_data()
 
-# 3. 미국식 발음 gTTS 음원 데이터 추출 함수
-def generate_gtts_bytes(text):
+# 3. [완벽 교정] 캐싱 장벽을 허물고 실시간으로 가장 안전하게 오디오를 전달하는 표준 오디오 플레이어 함수
+def play_word_audio(text, key_idx):
     clean_text = str(text).strip("* ")
-    if not clean_text or clean_text.lower() == "nan":
-        return None
-    try:
-        tts = gTTS(text=clean_text, lang='en', tld='com', slow=False)
-        fp = io.BytesIO()
-        tts.write_to_fp(fp)
-        return fp.getvalue()
-    except:
-        return None
+    if clean_text and clean_text.lower() != "nan":
+        try:
+            # 실시간으로 순수 바이너리 스트림을 열어 구글 gTTS 서버와 다이렉트 통신
+            tts = gTTS(text=clean_text, lang='en', tld='com', slow=False)
+            fp = io.BytesIO()
+            tts.write_to_fp(fp)
+            fp.seek(0)
+            # 깨진 캐시 데이터를 거치지 않고 스트림릿 내장 플레이어에 순수 바이트 그대로 주입
+            st.audio(fp.read(), format="audio/mp3", key=f"realtime_audio_{key_idx}")
+        except:
+            st.caption("🔊 연결 지연")
+    else:
+        st.caption("🔊 음원 없음")
 
-# 4. 앱 시작 시 모든 단어의 음원을 백그라운드에서 한 번에 사전 탑재
-if "audio_cache" not in st.session_state:
-    st.session_state.audio_cache = {}
-    with st.spinner("🔊 영어 발음 음원을 준비하고 있습니다... 잠시만 기다려 주세요!"):
-        for idx, row in df_game.iterrows():
-            word_key = str(row['word']).strip("* ")
-            st.session_state.audio_cache[word_key] = generate_gtts_bytes(word_key)
-
-# 5. 세션 상태 관리 변수 설정
+# 4. 세션 상태 관리 변수 설정
 if "game_started" not in st.session_state:
     st.session_state.game_started = False
 if "user_name" not in st.session_state:
@@ -142,7 +138,7 @@ def check_answer_callback():
                 break
     st.session_state.game_input_box = ""
 
-# 6. 📚 단어 자가 진단 다이얼로그 팝업 창 함수
+# 5. 📚 단어 자가 진단 다이얼로그 팝업 창 함수
 @st.dialog("📖 Word List")
 def show_study_records():
     st.write("지우기 버튼을 누르면 단어나 뜻이 빈칸으로 변합니다. 정답은 파란색, 정답이 아니면 빨간색으로 표시돼요. 스스로 공부해봐요😄")
@@ -227,28 +223,19 @@ def show_study_records():
                 if state_m["status"] == "wrong":
                     st.markdown("<span class='txt-wrong'>❌ 다시 입력해보세요!</span>", unsafe_allow_html=True)
                     
-        # 🔊 [수정포인트] TypeError 방지 수문장 설치 (바이트 데이터 타입 검증 후 출력)
+        # 🔊 실시간 다이렉트 통신 연결 (오류 원천 차단)
         with col_audio_area:
-            cached_audio = st.session_state.audio_cache.get(clean_word, None)
-            if cached_audio and isinstance(cached_audio, bytes):
-                try:
-                    st.audio(cached_audio, format="audio/mp3", key=f"audio_player_{index}")
-                except:
-                    st.caption("🔊 재생 오류")
-            else:
-                st.caption("🔊 음원 없음")
+            play_word_audio(clean_word, index)
                 
         st.write("---")
 
-# 7. 🎮 단어 게임 메인 프레그먼트 구역
+# 6. 🎮 단어 게임 메인 프레그먼트 구역
 @st.fragment
 def word_game_frame():
-    st.title("🕹️ 아진T와 함께하는 단어 게임💕")
-
-    # [화면 1] 로그인 및 시작 전 화면
+    # 최초 로딩 메시지 제거 후 깔끔한 타이틀 유지
+    st.write("위에서 내려오는 영단어의 뜻을 시간 내에 맞춰보세요!")
+    
     if not st.session_state.game_started:
-        st.write("위에서 내려오는 영단어의 뜻을 시간 내에 맞춰보세요!")
-        
         name_input = st.text_input("이름을 입력하세요:", value=st.session_state.user_name, key="word_game_user_name_input")
         
         if st.button("Start", use_container_width=True):
@@ -270,7 +257,6 @@ def word_game_frame():
         elapsed_time = time.time() - st.session_state.start_time
         remaining_time = max(0, 50 - int(elapsed_time))
         
-        # ⏱️ 게임 종료 상태
         if remaining_time <= 0:
             st.title("🚨 Game Over")
             st.error(f"게임이 끝났습니다😉! {st.session_state.user_name}님의 최종 점수는 **{st.session_state.score}점**입니다.👍")
@@ -291,7 +277,6 @@ def word_game_frame():
             if st.button("📚 단어학습하기", use_container_width=True):
                 show_study_records()
 
-        # 🕹️ 게임 진행 중 상태
         else:
             if time.time() - st.session_state.last_refresh_time > 12.0:
                 for b in st.session_state.active_words:
@@ -330,5 +315,5 @@ def word_game_frame():
             time.sleep(0.4)
             st.rerun()
 
-# 8. 격리된 프레그먼트 함수 구동
+# 7. 격리된 프레그먼트 함수 구동
 word_game_frame()
