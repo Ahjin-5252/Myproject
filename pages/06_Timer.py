@@ -1,38 +1,32 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import base64
-from pathlib import Path
 
 # 1. 페이지 설정 및 메인 타이틀 정렬
 st.set_page_config(page_title="Customized Timer", layout="centered")
 
 st.title("🐧 MK316 Customized Timer")
-# [요청사항 1] 타이틀 아래에 작고 정갈하게 들어가는 영문 커스텀 멘트
 st.caption("Modified by Ahjin") 
 
-# [요청사항 2] 초 단위 입력을 편리한 '분(Minutes)' 단위 입력으로 대개혁
+# 2. 분(Minutes) 단위 입력 시스템
 minutes = st.number_input(
     "Set Countdown Time (in minutes)",
     min_value=1,
-    max_value=120,    # 교시 내 활용을 고려하여 최대 120분(2시간)으로 상한선 조절
-    value=10          # 기본 세팅값: 10분
+    max_value=120,
+    value=10          
 )
 
-# 자바스크립트 타이머 연동을 위해 '분' 데이터를 '초' 단위로 자동 환산
+# 자바스크립트 연동을 위한 초 환산
 seconds = minutes * 60
 
-# 알람 음원 인코딩 파트
-audio_html = ""
-audio_path = Path("timesup.mp3")
+# [대개혁] 외부 mp3 파일 없이도 웹에서 즉시 재생되는 맑은 온라인 알람 벨소리 주소 바인딩
+# (교실에서 쓰기 좋은 깔끔한 전자 알람 소리입니다.)
+online_alarm_url = "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"
 
-if audio_path.exists():
-    audio_bytes = audio_path.read_bytes()
-    audio_base64 = base64.b64encode(audio_bytes).decode()
-    audio_html = f"""
-    <audio id="alarmSound">
-        <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
-    </audio>
-    """
+audio_html = f"""
+<audio id="alarmSound" preload="auto">
+    <source src="{online_alarm_url}" type="audio/ogg">
+</audio>
+"""
 
 # HTML/JavaScript 타이머 대시보드 렌더링
 components.html(
@@ -162,9 +156,13 @@ components.html(
                     document.getElementById("timerText").textContent = "Done";
                     document.getElementById("message").textContent = "⏰ Time's Up!";
 
+                    // 시간 종료 시 오디오 플레이어 강제 강타 구역
                     const alarm = document.getElementById("alarmSound");
                     if (alarm) {{
-                        alarm.play();
+                        alarm.muted = false; // 혹시 모를 브라우저 음소거 정책 해제
+                        alarm.play().catch(function(error) {{
+                            console.log("Audio play failed: ", error);
+                        }});
                     }}
                 }}
             }}, 1000);
@@ -175,6 +173,14 @@ components.html(
             timerInterval = null;
             remainingTime = totalTime;
             document.getElementById("message").textContent = "";
+            
+            // 리셋 시 알람 소리도 조용히 정지시킵니다.
+            const alarm = document.getElementById("alarmSound");
+            if (alarm) {{
+                alarm.pause();
+                alarm.currentTime = 0;
+            }}
+            
             updateTimerDisplay();
         }}
 
