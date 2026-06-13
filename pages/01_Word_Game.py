@@ -53,25 +53,26 @@ def load_game_data():
 
 df_game = load_game_data()
 
-# 3. 미국식 발음 gTTS 음원 데이터 추출 함수 (안전지대 배치)
+# 3. 미국식 발음 gTTS 음원 데이터 추출 함수
 def generate_gtts_bytes(text):
     clean_text = str(text).strip("* ")
-    tts = gTTS(text=clean_text, lang='en', tld='com', slow=False)
-    fp = io.BytesIO()
-    tts.write_to_fp(fp)
-    return fp.getvalue()
+    if not clean_text or clean_text.lower() == "nan":
+        return None
+    try:
+        tts = gTTS(text=clean_text, lang='en', tld='com', slow=False)
+        fp = io.BytesIO()
+        tts.write_to_fp(fp)
+        return fp.getvalue()
+    except:
+        return None
 
-# 4. 앱 시작 시 모든 단어의 음원을 백그라운드에서 한 번에 사전 탑재 (가장 중요)
+# 4. 앱 시작 시 모든 단어의 음원을 백그라운드에서 한 번에 사전 탑재
 if "audio_cache" not in st.session_state:
     st.session_state.audio_cache = {}
-    # data.csv의 모든 단어 음원을 안전한 세션에 미리 저장해 둡니다.
     with st.spinner("🔊 영어 발음 음원을 준비하고 있습니다... 잠시만 기다려 주세요!"):
         for idx, row in df_game.iterrows():
             word_key = str(row['word']).strip("* ")
-            try:
-                st.session_state.audio_cache[word_key] = generate_gtts_bytes(word_key)
-            except:
-                st.session_state.audio_cache[word_key] = None
+            st.session_state.audio_cache[word_key] = generate_gtts_bytes(word_key)
 
 # 5. 세션 상태 관리 변수 설정
 if "game_started" not in st.session_state:
@@ -226,13 +227,16 @@ def show_study_records():
                 if state_m["status"] == "wrong":
                     st.markdown("<span class='txt-wrong'>❌ 다시 입력해보세요!</span>", unsafe_allow_html=True)
                     
-        # 🔊 [수정포인트] 인터넷 실시간 요청 차단! 미리 세션에 구워둔 바이트를 즉시 다이렉트 출력
+        # 🔊 [수정포인트] TypeError 방지 수문장 설치 (바이트 데이터 타입 검증 후 출력)
         with col_audio_area:
             cached_audio = st.session_state.audio_cache.get(clean_word, None)
-            if cached_audio is not None:
-                st.audio(cached_audio, format="audio/mp3", key=f"audio_player_{index}")
+            if cached_audio and isinstance(cached_audio, bytes):
+                try:
+                    st.audio(cached_audio, format="audio/mp3", key=f"audio_player_{index}")
+                except:
+                    st.caption("🔊 재생 오류")
             else:
-                st.caption("🔊 지원 안 함")
+                st.caption("🔊 음원 없음")
                 
         st.write("---")
 
