@@ -3,18 +3,25 @@ import streamlit.components.v1 as components
 import base64
 from pathlib import Path
 
-st.set_page_config(page_title="MK316 Customized Timer", layout="centered")
+# 1. 페이지 설정 및 메인 타이틀 정렬
+st.set_page_config(page_title="Customized Timer", layout="centered")
 
 st.title("🐧 MK316 Customized Timer")
+# [요청사항 1] 타이틀 아래에 작고 정갈하게 들어가는 영문 커스텀 멘트
+st.caption("Modified by Ahjin") 
 
-seconds = st.number_input(
-    "Set Countdown Time (in seconds)",
+# [요청사항 2] 초 단위 입력을 편리한 '분(Minutes)' 단위 입력으로 대개혁
+minutes = st.number_input(
+    "Set Countdown Time (in minutes)",
     min_value=1,
-    max_value=7200,
-    value=10
+    max_value=120,    # 교시 내 활용을 고려하여 최대 120분(2시간)으로 상한선 조절
+    value=10          # 기본 세팅값: 10분
 )
 
-# Optional audio file
+# 자바스크립트 타이머 연동을 위해 '분' 데이터를 '초' 단위로 자동 환산
+seconds = minutes * 60
+
+# 알람 음원 인코딩 파트
 audio_html = ""
 audio_path = Path("timesup.mp3")
 
@@ -27,6 +34,7 @@ if audio_path.exists():
     </audio>
     """
 
+# HTML/JavaScript 타이머 대시보드 렌더링
 components.html(
     f"""
     <div style="text-align:center; font-family:Arial, sans-serif;">
