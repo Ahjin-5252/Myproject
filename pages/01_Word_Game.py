@@ -5,9 +5,7 @@ import time
 from gtts import gTTS
 import io
 
-# 1. 페이지 설정 및 미니멀 UI/애니메이션 정의 (최상단 선언 유지)
-st.set_page_config(page_title="💓아진T와 함께하는 단어 게임💓", page_icon="🕹️", layout="centered")
-
+# 1. 스타일 설정
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff; }
@@ -37,7 +35,6 @@ st.markdown("""
     .score-box { font-size: 16px; font-weight: 500; color: #555555; text-align: center; padding: 5px; }
     div.stTextInput { margin-top: 30px; }
     
-    /* 🎨 자가 진단 워크시트 정답(파란색) / 오답(빨간색) 서식 정의 */
     .txt-correct { color: #0066CC !important; font-weight: bold; }
     .txt-wrong { color: #FF3333 !important; font-weight: bold; font-size: 14px; }
     </style>
@@ -56,22 +53,7 @@ def load_game_data():
 
 df_game = load_game_data()
 
-# 3. [교정 포인트] 한 단어씩 안전하게 음원을 호출하는 다이렉트 바이패스 함수
-def play_word_audio(text, key_idx):
-    clean_text = str(text).strip("* ")
-    if clean_text and clean_text.lower() != "nan":
-        try:
-            tts = gTTS(text=clean_text, lang='en', tld='com', slow=False)
-            fp = io.BytesIO()
-            tts.write_to_fp(fp)
-            fp.seek(0)
-            st.audio(fp.read(), format="audio/mp3", key=f"direct_audio_{key_idx}")
-        except:
-            st.caption("🔊 연결 지연")
-    else:
-        st.caption("🔊 음원 없음")
-
-# 4. 세션 상태 초기화
+# 3. 세션 상태 관리 변수 설정
 if "game_started" not in st.session_state:
     st.session_state.game_started = False
 if "user_name" not in st.session_state:
@@ -92,8 +74,11 @@ if "last_refresh_time" not in st.session_state:
     st.session_state.last_refresh_time = None
 if "study_states" not in st.session_state:
     st.session_state.study_states = {}
-if "show_study_section" not in st.session_state:  # 학습 섹션 토글용 변수
+if "show_study_section" not in st.session_state:
     st.session_state.show_study_section = False
+# 개별 오디오가 재생 중인지 기록할 금고 세션 추가
+if "active_audio_key" not in st.session_state:
+    st.session_state.active_audio_key = None
 
 COLORS = ["#2AM2FF", "#FF3B6F", "#2BD9A5", "#FFAA00", "#9B5DE5"]
 
@@ -141,7 +126,7 @@ def check_answer_callback():
                 break
     st.session_state.game_input_box = ""
 
-# 5. 📚 [구조 전면 교정] 창 닫힘 및 연결 지연을 완전히 해결한 평면식 단어 학습판
+# 4. 📚 스스로 단어 학습판 화면 출력 함수
 def render_study_records():
     st.markdown("### 📖 스스로 단어 학습하기")
     st.write("지우기 버튼을 누르면 단어나 뜻이 빈칸으로 변합니다. 정답은 파란색, 오답은 빨간색으로 표시돼요. 스스로 공부해봐요😄")
@@ -224,22 +209,40 @@ def render_study_records():
                 if state_m["status"] == "wrong":
                     st.markdown("<span class='txt-wrong'>❌ 다시 도전!</span>", unsafe_allow_html=True)
                     
-        # 🔊 미국식 발음 gTTS 컴포넌트 구역
+        # 🔊 [대개혁 완료] 클릭하는 순간에만 단 1개씩 구글 gTTS 서버와 통신하는 타겟 스피커 시스템
         with col_audio_area:
-            play_word_audio(clean_word, index)
+            audio_btn_key = f"btn_audio_{index}"
+            
+            # 발음듣기 버튼을 배치합니다.
+            if st.button("🔊 발음듣기", key=audio_btn_key, use_container_width=True):
+                st.session_state.active_audio_key = audio_btn_key
+                st.rerun()
+            
+            # 방금 누른 그 버튼의 구역에서만 구글 서버로 오디오 스트림을 안전하게 요청 및 렌더링합니다.
+            if st.session_state.active_audio_key == audio_btn_key:
+                try:
+                    tts = gTTS(text=clean_word, lang='en', tld='com', slow=False)
+                    fp = io.BytesIO()
+                    tts.write_to_fp(fp)
+                    fp.seek(0)
+                    st.audio(fp.read(), format="audio/mp3", autoplay=True) # 자동으로 즉시 소리가 나오게 연출
+                except:
+                    st.caption("⚠️ 연결 지연")
+                finally:
+                    # 소리를 내보낸 후 다음 동작을 위해 스피커 상태를 조용히 비워둡니다.
+                    st.session_state.active_audio_key = None
                 
         st.write("---")
 
-# 6. 🎮 단어 게임 메인 프레그먼트 구역 (격리벽 설치로 내부 새로고침 최적화)
+# 5. 🎮 단어 게임 메인 프레그먼트 구역
 @st.fragment
 def word_game_frame():
     st.title("🕹️ 아진T와 함께하는 단어 게임💕")
-
-    # [화면 1] 로그인 및 시작 전 화면
+    
     if not st.session_state.game_started:
         st.write("위에서 내려오는 영단어의 뜻을 시간 내에 맞춰보세요!")
-        
         name_input = st.text_input("이름을 입력하세요:", value=st.session_state.user_name, key="word_game_user_name_input")
+        
         if st.button("Start", use_container_width=True):
             if name_input.strip() == "":
                 st.warning("이름을 입력해야 게임을 시작할 수 있습니다!")
@@ -260,7 +263,6 @@ def word_game_frame():
         elapsed_time = time.time() - st.session_state.start_time
         remaining_time = max(0, 50 - int(elapsed_time))
         
-        # ⏱️ 게임 종료 상태
         if remaining_time <= 0:
             st.title("🚨 Game Over")
             st.error(f"게임이 끝났습니다😉! {st.session_state.user_name}님의 최종 점수는 **{st.session_state.score}점**입니다.👍")
@@ -279,7 +281,6 @@ def word_game_frame():
                 
             st.write("---")
             
-            # [대수술] 팝업창을 없애고 튕김이 전혀 없는 하단 평면 토글식으로 변경
             if st.button("📚 단어 학습판 열기 / 닫기", use_container_width=True):
                 st.session_state.show_study_section = not st.session_state.show_study_section
                 st.rerun()
@@ -287,7 +288,6 @@ def word_game_frame():
             if st.session_state.show_study_section:
                 render_study_records()
 
-        # 🕹️ 게임 진행 중 상태
         else:
             if time.time() - st.session_state.last_refresh_time > 12.0:
                 for b in st.session_state.active_words:
@@ -326,5 +326,5 @@ def word_game_frame():
             time.sleep(0.4)
             st.rerun()
 
-# 7. 격리된 프레그먼트 함수 최종 실행
+# 6. 격리된 프레그먼트 함수 최종 실행
 word_game_frame()
