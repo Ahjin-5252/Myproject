@@ -127,7 +127,7 @@ def get_us_audio_bytes(text):
     tts.write_to_fp(fp)
     return fp.getvalue()
 
-# 4. 🎮 단어 게임 메인 프레그먼트 구역 (app.py로의 튕김을 원천 차단하는 핵심 격리벽)
+# 4. 🎮 단어 게임 메인 프레그먼트 구역
 @st.fragment
 def word_game_frame():
     st.title("🕹️ 아진T와 함께하는 단어 게임💕")
@@ -136,13 +136,15 @@ def word_game_frame():
     if not st.session_state.game_started:
         st.write("위에서 내려오는 영단어의 뜻을 시간 내에 맞춰보세요!")
         
-        # 엔터키를 쳤을 때 홈으로 튕기는 것을 방지하기 위해 콜백 지정을 제거하고 버튼 클릭 유도
-        st.session_state.user_name = st.text_input("이름을 입력하세요:", value=st.session_state.user_name)
+        # 엔터키 오작동 방지를 위해 기존 세션값 연결 및 라벨 추가
+        name_input = st.text_input("이름을 입력하세요:", value=st.session_state.user_name, key="word_game_user_name_input")
         
         if st.button("Start", use_container_width=True):
-            if st.session_state.user_name.strip() == "":
+            if name_input.strip() == "":
                 st.warning("이름을 입력해야 게임을 시작할 수 있습니다!")
             else:
+                # 안전하게 세션 값을 할당하여 대문 튕김 원천 봉쇄
+                st.session_state.user_name = name_input.strip()
                 st.session_state.game_started = True
                 st.session_state.start_time = time.time()
                 st.session_state.score = 0
@@ -150,7 +152,6 @@ def word_game_frame():
                 st.session_state.popped_index = None
                 st.session_state.study_states = {}
                 init_game_words()
-                st.invalidate_pages() # 튕김 현상을 없애고 네비게이션을 고정하는 보안 코드
                 st.rerun()
 
     # [화면 2] 게임 진행 중 또는 종료 화면
@@ -257,13 +258,13 @@ def word_game_frame():
                                         st.rerun()
                                 if state_m["status"] == "wrong":
                                     st.markdown("<span class='txt-wrong'>❌ 다시 입력해보세요!</span>", unsafe_allow_html=True)
-                                    
-                        with col_audio_area:
-                            audio_bytes = get_us_audio_bytes(clean_word)
-                            st.audio(audio_bytes, format="audio/mp3")
-                            
-                        st.write("---")
-                show_study_records()
+                                
+                    with col_audio_area:
+                        audio_bytes = get_us_audio_bytes(clean_word)
+                        st.audio(audio_bytes, format="audio/mp3")
+                        
+                    st.write("---")
+            show_study_records()
 
         # 🕹️ 게임 진행 중 상태
         else:
@@ -291,7 +292,6 @@ def word_game_frame():
             b_html += "</div>"
             st.markdown(b_html, unsafe_allow_html=True)
             
-            # 정답 입력창 엔터키 다운 시 튕김을 전면 방지하기 위해 온체인지 콜백 내부에서 강제 격리 제어
             st.text_input("", key="game_input_box", placeholder="Type here...", on_change=check_answer_callback)
             
             p_idx = st.session_state.get("popped_index", None)
