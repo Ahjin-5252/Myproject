@@ -53,16 +53,27 @@ def load_game_data():
 
 df_game = load_game_data()
 
-# 3. 미국식 발음 gTTS 음원 데이터 개별 추출 함수 (캐싱으로 로딩 유실 전면 차단)
-@st.cache_data
-def get_us_audio_bytes(text):
+# 3. 미국식 발음 gTTS 음원 데이터 추출 함수 (안전지대 배치)
+def generate_gtts_bytes(text):
     clean_text = str(text).strip("* ")
     tts = gTTS(text=clean_text, lang='en', tld='com', slow=False)
     fp = io.BytesIO()
     tts.write_to_fp(fp)
     return fp.getvalue()
 
-# 4. 세션 상태 관리 변수 설정
+# 4. 앱 시작 시 모든 단어의 음원을 백그라운드에서 한 번에 사전 탑재 (가장 중요)
+if "audio_cache" not in st.session_state:
+    st.session_state.audio_cache = {}
+    # data.csv의 모든 단어 음원을 안전한 세션에 미리 저장해 둡니다.
+    with st.spinner("🔊 영어 발음 음원을 준비하고 있습니다... 잠시만 기다려 주세요!"):
+        for idx, row in df_game.iterrows():
+            word_key = str(row['word']).strip("* ")
+            try:
+                st.session_state.audio_cache[word_key] = generate_gtts_bytes(word_key)
+            except:
+                st.session_state.audio_cache[word_key] = None
+
+# 5. 세션 상태 관리 변수 설정
 if "game_started" not in st.session_state:
     st.session_state.game_started = False
 if "user_name" not in st.session_state:
@@ -130,8 +141,7 @@ def check_answer_callback():
                 break
     st.session_state.game_input_box = ""
 
-# 5. 📚 [수정포인트] 격리벽 안에서도 gTTS 통신이 100% 뚫리도록 데코레이터 이중 선언 보완
-@st.fragment
+# 6. 📚 단어 자가 진단 다이얼로그 팝업 창 함수
 @st.dialog("📖 Word List")
 def show_study_records():
     st.write("지우기 버튼을 누르면 단어나 뜻이 빈칸으로 변합니다. 정답은 파란색, 정답이 아니면 빨간색으로 표시돼요. 스스로 공부해봐요😄")
@@ -210,23 +220,23 @@ def show_study_records():
                             st.session_state.study_states[m_key]["status"] = "wrong"
                         st.rerun()
                 with cm_cancel:
-                    if st.button("취se", key=f"dlg_cnl_m_{index}", use_container_width=True):
+                    if st.button("취소", key=f"dlg_cnl_m_{index}", use_container_width=True):
                         st.session_state.study_states[m_key] = {"mode": "show", "status": "none"}
                         st.rerun()
                 if state_m["status"] == "wrong":
                     st.markdown("<span class='txt-wrong'>❌ 다시 입력해보세요!</span>", unsafe_allow_html=True)
                     
-        # 🔊 모든 단어 고유 재생 컴포넌트 실시간 바인딩
+        # 🔊 [수정포인트] 인터넷 실시간 요청 차단! 미리 세션에 구워둔 바이트를 즉시 다이렉트 출력
         with col_audio_area:
-            try:
-                audio_bytes = get_us_audio_bytes(clean_word)
-                st.audio(audio_bytes, format="audio/mp3", key=f"audio_player_{index}")
-            except Exception as e:
-                st.caption("🔊 로딩 실패")
+            cached_audio = st.session_state.audio_cache.get(clean_word, None)
+            if cached_audio is not None:
+                st.audio(cached_audio, format="audio/mp3", key=f"audio_player_{index}")
+            else:
+                st.caption("🔊 지원 안 함")
                 
         st.write("---")
 
-# 6. 🎮 단어 게임 메인 프레그먼트 구역
+# 7. 🎮 단어 게임 메인 프레그먼트 구역
 @st.fragment
 def word_game_frame():
     st.title("🕹️ 아진T와 함께하는 단어 게임💕")
@@ -316,5 +326,5 @@ def word_game_frame():
             time.sleep(0.4)
             st.rerun()
 
-# 5. 격리된 프레그먼트 함수 구동
+# 8. 격리된 프레그먼트 함수 구동
 word_game_frame()
