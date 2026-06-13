@@ -315,9 +315,10 @@ def run_word_game():
             time.sleep(0.4)
             st.rerun()
 
-# 3. 🛠️ 완벽한 네비게이션 매핑 시스템 (영문 경로로 완전히 에러 차단)
-# 실제 GitHub 파일명(영어)과 사이드바에 출력될 제목(한글+이모지)을 1:1로 매핑합니다.
+# 3. 🛠️ 완벽한 네비게이션 매핑 시스템 (실제 깃허브 소문자 파일명에 맞춰 완전 에러 차단)
 page_01 = st.Page(run_word_game, title="01 🕹️ 단어 게임 앱", icon="🕹️", default=True)
+
+# [수정포인트] 파일명을 실제 저장소 규칙인 소문자 형태로 정확하게 매핑했습니다.
 page_02 = st.Page("pages/02_quiz.py", title="02 📖 본문 확인 퀴즈", icon="📖")
 page_03 = st.Page("pages/03_textbook.py", title="03 📘 Textbook", icon="📘")
 page_04 = st.Page("pages/04_worksheet.py", title="04 📝 Worksheet", icon="📝")
