@@ -54,7 +54,7 @@ page_03 = st.Page("pages/03_Textbook.py", title="03 📘 Textbook", icon="📘")
 page_04 = st.Page("pages/04_Worksheet.py", title="04 📝 Worksheet", icon="📝")
 page_05 = st.Page("pages/05_Video.py", title="05 🎬 In-class Video", icon="🎬")
 page_06 = st.Page("pages/06_Timer.py", title="06 ⏳ Class Timer", icon="⏳")
-page_07 = st.Page("pages/07_Guide.py", title="07 📽️ Video Guide for Apps", icon="📽️")
+page_07 = st.Page("pages/07_Guide.py", title="07 📽️ Video Guide for Lesson", icon="📽️")
 
 # 단어 게임 안에서 rerun이 일어나도 튕기지 않도록 구조화된 내비게이션 실행
 pg = st.navigation([page_00, page_01, page_02, page_03, page_04, page_05, page_06, page_07])
