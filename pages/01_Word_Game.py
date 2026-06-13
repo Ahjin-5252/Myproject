@@ -53,7 +53,16 @@ def load_game_data():
 
 df_game = load_game_data()
 
-# 3. 세션 상태 관리 변수 설정
+# 3. 미국식 발음 gTTS 음원 데이터 개별 추출 함수 (캐싱 처리로 속도 최적화)
+@st.cache_data
+def get_us_audio_bytes(text):
+    clean_text = str(text).strip("* ")
+    tts = gTTS(text=clean_text, lang='en', tld='com', slow=False)
+    fp = io.BytesIO()
+    tts.write_to_fp(fp)
+    return fp.getvalue()
+
+# 4. 세션 상태 관리 변수 설정
 if "game_started" not in st.session_state:
     st.session_state.game_started = False
 if "user_name" not in st.session_state:
@@ -121,13 +130,103 @@ def check_answer_callback():
                 break
     st.session_state.game_input_box = ""
 
-def get_us_audio_bytes(text):
-    tts = gTTS(text=text, lang='en', tld='com', slow=False)
-    fp = io.BytesIO()
-    tts.write_to_fp(fp)
-    return fp.getvalue()
+# 5. 📚 [교정 완료] 단어 자가 진단 다이얼로그 팝업 창 함수 독립 선언
+@st.dialog("📖 Word List")
+def show_study_records():
+    st.write("지우기 버튼을 누르면 단어나 뜻이 빈칸으로 변합니다. 정답은 파란색, 정답이 아니면 빨간색으로 표시돼요. 스스로 공부해봐요😄")
+    st.write("---")
+    
+    # UnboundLocalError 방지를 위해 글로벌 캐싱 데이터 로드
+    current_df = load_game_data()
+    
+    for index, row in current_df.iterrows():
+        clean_word = str(row['word']).strip("* ")
+        clean_meaning = str(row['meaning']).strip()
+        
+        w_key = f"w_{index}"
+        m_key = f"m_{index}"
+        
+        if w_key not in st.session_state.study_states:
+            st.session_state.study_states[w_key] = {"mode": "show", "status": "none"}
+        if m_key not in st.session_state.study_states:
+            st.session_state.study_states[m_key] = {"mode": "show", "status": "none"}
+            
+        col_word_area, col_meaning_area, col_audio_area = st.columns([3, 3, 2])
+        
+        # 🅰️ 영어 단어 지우기/확인 제어 구역
+        with col_word_area:
+            state = st.session_state.study_states[w_key]
+            if state["mode"] == "show":
+                inner_c1, inner_c2 = st.columns([2.5, 1.5])
+                with inner_c1:
+                    if state["status"] == "correct":
+                        st.markdown(f"<span class='txt-correct'>{clean_word}</span>", unsafe_allow_html=True)
+                    else:
+                        st.write(clean_word)
+                with inner_c2:
+                    if st.button("지우기", key=f"dialog_del_w_{index}", use_container_width=True):
+                        st.session_state.study_states[w_key] = {"mode": "edit", "status": "none"}
+                        st.rerun()
+            else:
+                in_val = st.text_input("단어 입력", key=f"dlg_ans_w_{index}", placeholder="Type...", label_visibility="collapsed")
+                c_btn, c_cancel = st.columns(2)
+                with c_btn:
+                    if st.button("확인", key=f"dlg_chk_w_{index}", use_container_width=True):
+                        if in_val.strip().lower() == clean_word.lower():
+                            st.session_state.study_states[w_key] = {"mode": "show", "status": "correct"}
+                        else:
+                            st.session_state.study_states[w_key]["status"] = "wrong"
+                        st.rerun()
+                with c_cancel:
+                    if st.button("취소", key=f"dlg_cnl_w_{index}", use_container_width=True):
+                        st.session_state.study_states[w_key] = {"mode": "show", "status": "none"}
+                        st.rerun()
+                if state["status"] == "wrong":
+                    st.markdown("<span class='txt-wrong'>❌ 다시 입력해보세요!</span>", unsafe_allow_html=True)
 
-# 4. 🎮 단어 게임 메인 프레그먼트 구역
+        # 🅱️ 한국어 뜻 지우기/확인 제어 구역
+        with col_meaning_area:
+            state_m = st.session_state.study_states[m_key]
+            if state_m["mode"] == "show":
+                inner_m1, inner_m2 = st.columns([2.5, 1.5])
+                with inner_m1:
+                    if state_m["status"] == "correct":
+                        st.markdown(f"<span class='txt-correct'>{clean_meaning}</span>", unsafe_allow_html=True)
+                    else:
+                        st.write(clean_meaning)
+                with inner_m2:
+                    if st.button("지우기", key=f"dialog_del_m_{index}", use_container_width=True):
+                        st.session_state.study_states[m_key] = {"mode": "edit", "status": "none"}
+                        st.rerun()
+            else:
+                in_val_m = st.text_input("뜻 입력", key=f"dlg_ans_m_{index}", placeholder="Type...", label_visibility="collapsed")
+                cm_btn, cm_cancel = st.columns(2)
+                with cm_btn:
+                    if st.button("확인", key=f"dlg_chk_m_{index}", use_container_width=True):
+                        valid_meanings = [m.strip() for m in clean_meaning.split(",")]
+                        if in_val_m.strip() in valid_meanings:
+                            st.session_state.study_states[m_key] = {"mode": "show", "status": "correct"}
+                        else:
+                            st.session_state.study_states[m_key]["status"] = "wrong"
+                        st.rerun()
+                with cm_cancel:
+                    if st.button("취소", key=f"dlg_cnl_m_{index}", use_container_width=True):
+                        st.session_state.study_states[m_key] = {"mode": "show", "status": "none"}
+                        st.rerun()
+                if state_m["status"] == "wrong":
+                    st.markdown("<span class='txt-wrong'>❌ 다시 입력해보세요!</span>", unsafe_allow_html=True)
+                    
+        # 🔊 [수정포인트] 각 단어별 고유 오디오 컴포넌트 실시간 바인딩 (모든 단어 활성화 보장)
+        with col_audio_area:
+            try:
+                audio_bytes = get_us_audio_bytes(clean_word)
+                st.audio(audio_bytes, format="audio/mp3", key=f"audio_player_{index}")
+            except Exception as e:
+                st.caption("🔊 로딩 실패")
+                
+        st.write("---")
+
+# 6. 🎮 단어 게임 메인 프레그먼트 구역
 @st.fragment
 def word_game_frame():
     st.title("🕹️ 아진T와 함께하는 단어 게임💕")
@@ -136,14 +235,12 @@ def word_game_frame():
     if not st.session_state.game_started:
         st.write("위에서 내려오는 영단어의 뜻을 시간 내에 맞춰보세요!")
         
-        # 엔터키 오작동 방지를 위해 기존 세션값 연결 및 라벨 추가
         name_input = st.text_input("이름을 입력하세요:", value=st.session_state.user_name, key="word_game_user_name_input")
         
         if st.button("Start", use_container_width=True):
             if name_input.strip() == "":
                 st.warning("이름을 입력해야 게임을 시작할 수 있습니다!")
             else:
-                # 안전하게 세션 값을 할당하여 대문 튕김 원천 봉쇄
                 st.session_state.user_name = name_input.strip()
                 st.session_state.game_started = True
                 st.session_state.start_time = time.time()
@@ -177,94 +274,9 @@ def word_game_frame():
                 
             st.write("---")
             
-            # 단어학습하기 기능
+            # [수정포인트] 다이얼로그 호출부 간섭 완전 해제
             if st.button("📚 단어학습하기", use_container_width=True):
-                @st.dialog("📖 Word List")
-                def show_study_records():
-                    st.write("지우기 버튼을 누르면 단어나 뜻이 빈칸으로 변합니다. 정답은 파란색, 정답이 아니면 빨간색으로 표시돼요. 스스로 공부해봐요😄")
-                    st.write("---")
-                    
-                    for index, row in df_game.iterrows():
-                        clean_word = str(row['word']).strip("* ")
-                        clean_meaning = str(row['meaning']).strip()
-                        
-                        w_key = f"w_{index}"
-                        m_key = f"m_{index}"
-                        
-                        if w_key not in st.session_state.study_states:
-                            st.session_state.study_states[w_key] = {"mode": "show", "status": "none"}
-                        if m_key not in st.session_state.study_states:
-                            st.session_state.study_states[m_key] = {"mode": "show", "status": "none"}
-                            
-                        col_word_area, col_meaning_area, col_audio_area = st.columns([3, 3, 2])
-                        
-                        with col_word_area:
-                            state = st.session_state.study_states[w_key]
-                            if state["mode"] == "show":
-                                inner_c1, inner_c2 = st.columns([2.5, 1.5])
-                                with inner_c1:
-                                    if state["status"] == "correct":
-                                        st.markdown(f"<span class='txt-correct'>{clean_word}</span>", unsafe_allow_html=True)
-                                    else:
-                                        st.write(clean_word)
-                                with inner_c2:
-                                    if st.button("지우기", key=f"dialog_del_w_{index}", use_container_width=True):
-                                        st.session_state.study_states[w_key] = {"mode": "edit", "status": "none"}
-                                        st.rerun()
-                            else:
-                                in_val = st.text_input("단어 입력", key=f"dlg_ans_w_{index}", placeholder="Type...", label_visibility="collapsed")
-                                c_btn, c_cancel = st.columns(2)
-                                with c_btn:
-                                    if st.button("확인", key=f"dlg_chk_w_{index}", use_container_width=True):
-                                        if in_val.strip().lower() == clean_word.lower():
-                                            st.session_state.study_states[w_key] = {"mode": "show", "status": "correct"}
-                                        else:
-                                            st.session_state.study_states[w_key]["status"] = "wrong"
-                                        st.rerun()
-                                with c_cancel:
-                                    if st.button("취소", key=f"dlg_cnl_w_{index}", use_container_width=True):
-                                        st.session_state.study_states[w_key] = {"mode": "show", "status": "none"}
-                                        st.rerun()
-                                if state["status"] == "wrong":
-                                    st.markdown("<span class='txt-wrong'>❌ 다시 입력해보세요!</span>", unsafe_allow_html=True)
-
-                        with col_meaning_area:
-                            state_m = st.session_state.study_states[m_key]
-                            if state_m["mode"] == "show":
-                                inner_m1, inner_m2 = st.columns([2.5, 1.5])
-                                with inner_m1:
-                                    if state_m["status"] == "correct":
-                                        st.markdown(f"<span class='txt-correct'>{clean_meaning}</span>", unsafe_allow_html=True)
-                                    else:
-                                        st.write(clean_meaning)
-                                with inner_m2:
-                                    if st.button("지우기", key=f"dialog_del_m_{index}", use_container_width=True):
-                                        st.session_state.study_states[m_key] = {"mode": "edit", "status": "none"}
-                                        st.rerun()
-                            else:
-                                in_val_m = st.text_input("뜻 입력", key=f"dlg_ans_m_{index}", placeholder="Type...", label_visibility="collapsed")
-                                cm_btn, cm_cancel = st.columns(2)
-                                with cm_btn:
-                                    if st.button("확인", key=f"dlg_chk_m_{index}", use_container_width=True):
-                                        valid_meanings = [m.strip() for m in clean_meaning.split(",")]
-                                        if in_val_m.strip() in valid_meanings:
-                                            st.session_state.study_states[m_key] = {"mode": "show", "status": "correct"}
-                                        else:
-                                            st.session_state.study_states[m_key]["status"] = "wrong"
-                                        st.rerun()
-                                with cm_cancel:
-                                    if st.button("취소", key=f"dlg_cnl_m_{index}", use_container_width=True):
-                                        st.session_state.study_states[m_key] = {"mode": "show", "status": "none"}
-                                        st.rerun()
-                                if state_m["status"] == "wrong":
-                                    st.markdown("<span class='txt-wrong'>❌ 다시 입력해보세요!</span>", unsafe_allow_html=True)
-                                
-                    with col_audio_area:
-                        audio_bytes = get_us_audio_bytes(clean_word)
-                        st.audio(audio_bytes, format="audio/mp3")
-                        
-                    st.write("---")
-            show_study_records()
+                show_study_records()
 
         # 🕹️ 게임 진행 중 상태
         else:
