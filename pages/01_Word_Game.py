@@ -12,7 +12,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# 2. 단어 게임 전용 실행 함수 정의 (코드를 안전하게 감싸 다른 페이지 구동 시 간섭을 방지합니다)
+# 2. 단어 게임 전용 실행 함수 정의
 def run_word_game():
     st.markdown("""
         <style>
@@ -315,16 +315,16 @@ def run_word_game():
             time.sleep(0.4)
             st.rerun()
 
-# 3. 🛠️ 완벽한 네비게이션 매핑 시스템 (실제 깃허브 소문자 파일명에 맞춰 완전 에러 차단)
+# 3. 🛠️ 완벽한 네비게이션 매핑 시스템 (실제 깃허브 대문자 파일명에 맞춰 완전 교정)
 page_01 = st.Page(run_word_game, title="01 🕹️ 단어 게임 앱", icon="🕹️", default=True)
 
-# [수정포인트] 파일명을 실제 저장소 규칙인 소문자 형태로 정확하게 매핑했습니다.
-page_02 = st.Page("pages/02_quiz.py", title="02 📖 본문 확인 퀴즈", icon="📖")
-page_03 = st.Page("pages/03_textbook.py", title="03 📘 Textbook", icon="📘")
-page_04 = st.Page("pages/04_worksheet.py", title="04 📝 Worksheet", icon="📝")
-page_05 = st.Page("pages/05_video.py", title="05 🎬 In-class Video", icon="🎬")
-page_06 = st.Page("pages/06_timer.py", title="06 ⏳ Class Timer", icon="⏳")
-page_07 = st.Page("pages/07_guide.py", title="07 📽️ Video Guide for Apps", icon="📽️")
+# [교정 포인트] 파일명 경로 인자들의 첫 글자를 실제 대문자 규칙에 맞춰 수정했습니다.
+page_02 = st.Page("pages/02_Quiz.py", title="02 📖 본문 확인 퀴즈", icon="📖")
+page_03 = st.Page("pages/03_Textbook.py", title="03 📘 Textbook", icon="📘")
+page_04 = st.Page("pages/04_Worksheet.py", title="04 📝 Worksheet", icon="📝")
+page_05 = st.Page("pages/05_Video.py", title="05 🎬 In-class Video", icon="🎬")
+page_06 = st.Page("pages/06_Timer.py", title="06 ⏳ Class Timer", icon="⏳")
+page_07 = st.Page("pages/07_Guide.py", title="07 📽️ Video Guide for Apps", icon="📽️")
 
 # 정의된 페이지 목록을 사이드바 빌더에 주입하여 실행합니다.
 pg = st.navigation([page_01, page_02, page_03, page_04, page_05, page_06, page_07])
